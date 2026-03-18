@@ -1,10 +1,25 @@
 import streamlit as st
-import pickle
 import numpy as np
+import os
+import pickle
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
 
-model = pickle.load(open("model.pkl", "rb"))
+# Load or create model
+if not os.path.exists("model.pkl"):
+    df = pd.read_csv("fraud_dataset_1000.csv")
+    X = df.drop("fraud", axis=1)
+    y = df["fraud"]
 
-st.title("Fraud Detection App")
+    model = RandomForestClassifier()
+    model.fit(X, y)
+
+    pickle.dump(model, open("model.pkl", "wb"))
+else:
+    model = pickle.load(open("model.pkl", "rb"))
+
+# UI
+st.title("🚨 Fraud Detection App")
 
 revenue = st.number_input("Revenue", 0.0)
 valuation = st.number_input("Valuation", 0.0)
@@ -18,6 +33,6 @@ if st.button("Predict"):
     result = model.predict(data)[0]
 
     if result == 1:
-        st.error("Fraud ❌")
+        st.error("⚠️ Fraud Detected")
     else:
-        st.success("Not Fraud ✅")
+        st.success("✅ Not Fraud")
